@@ -36,21 +36,33 @@ npm run dev
 | `/hello` | `app/hello/page.tsx` | 인사 페이지 |
 | `/api/scraping` | `app/api/scraping/route.ts` | 외부 상품 API에서 데이터를 가져와 반환 |
 
-`/api/scraping` 응답 예시:
+### `/api/scraping`
+
+| 쿼리 | 기본값 | 조건 |
+| --- | --- | --- |
+| `category` | `living` | 소문자와 하이픈, 30자 이하 |
+| `page` | `1` | 1 이상의 정수 |
+| `pageSize` | `3` | 1~50 사이의 정수 |
+
+요청 예시: `/api/scraping?category=living&page=2&pageSize=3`
 
 ```json
 {
   "success": true,
   "data": {
-    "response": { "products": [ ... ] },
-    "category": "living",
-    "page": 1,
-    "pageSize": 3
+    "products": [{ "id": "7", "name": "...", "price": 1000, ... }],
+    "pagination": { "page": 2, "pageSize": 3, "totalProducts": 42, "totalPages": 14, "hasNextPage": true, "hasPreviousPage": true }
   }
 }
 ```
 
-오류가 나면 상태 코드 500과 함께 `{ "success": false, "error": "..." }`를 반환합니다.
+판매자 정보(`sellerName`, `sellerEmail`)는 응답에서 제외됩니다. 오류가 나면 `{ "success": false, "error": "..." }`를 반환하며, 상태 코드는 다음과 같습니다.
+
+| 상태 코드 | 원인 |
+| --- | --- |
+| 400 | 쿼리 값이 조건에 맞지 않음 |
+| 502 | 외부 서버 오류, JSON이 아닌 응답, 예상과 다른 응답 형태 |
+| 504 | 외부 서버 응답 시간 초과 (5초) |
 
 ## 스타일
 

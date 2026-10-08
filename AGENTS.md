@@ -24,8 +24,10 @@ npx tsc --noEmit   # 타입 체크 (별도 스크립트 없음)
 ## 구조와 규칙
 
 - **라우팅**: `app/` 디렉터리 기반 App Router입니다. 페이지는 `app/<경로>/page.tsx`, API는 `app/api/<경로>/route.ts`에서 HTTP 메서드 이름(`GET`, `POST` 등)으로 함수를 export합니다.
-- **API Route 패턴** (`app/api/scraping/route.ts`): 외부 URL(`TARGET_URL`)을 `fetch(..., { cache: "no-store" })`로 호출하고, `response.ok`가 아니면 throw합니다. 성공 시 `{ success: true, data }`(200), 실패 시 `{ success: false, error }`(500)를 `NextResponse.json`으로 반환합니다. 새 API Route도 이 응답 형태를 따릅니다.
-  - 현재 대상은 `crawl-target-server.vercel.app/api/products`이며, `data`는 `{ response: <외부 응답 원본>, category, page, pageSize }` 형태입니다. `category`/`page`/`pageSize` 값은 `TARGET_URL` 쿼리 문자열과 응답 객체에 각각 하드코딩되어 있으므로 바꿀 때는 두 곳을 함께 수정합니다.
+- **API Route 패턴** (`app/api/scraping/route.ts`): 외부 API(`crawl-target-server.vercel.app/api/products`)를 대신 호출하는 프록시입니다. 새 API Route도 같은 응답 규칙을 따릅니다.
+  - 응답은 항상 `{ success: true, data }` 또는 `{ success: false, error }`입니다. 상태 코드는 잘못된 쿼리 400, 외부 서버 오류·비JSON·형태 불일치 502, 시간 초과(`AbortSignal.timeout`) 504로 구분합니다. 자세한 오류는 `console.error`로 서버 로그에만 남기고 클라이언트에는 정해진 메시지만 보냅니다.
+  - 쿼리 `category`(소문자·하이픈), `page`(1 이상 정수), `pageSize`(1~50 정수)를 검증한 뒤 `BASE_URL` + `API_END` 템플릿 리터럴로 외부 URL(`apiUrl`)을 만듭니다(`category`는 `encodeURIComponent` 처리). 기본값은 `living`/1/3입니다.
+  - `data`는 `{ products, pagination }`이며 `pagination`은 외부 응답 값을 그대로 씁니다. 상품은 `toPublicProduct`의 허용 목록 필드만 반환하므로 외부 응답의 `sellerName`/`sellerEmail` 같은 개인정보는 노출되지 않습니다. 필드를 추가할 때는 `Product` 타입과 `toPublicProduct`를 함께 수정합니다.
 - **주석 기반 구현**: 파일에 한국어 단계별 주석만 먼저 작성해 두고, 그 주석 순서대로 코드를 채우는 방식으로 작업합니다. 구현 시 기존 주석은 유지합니다.
 - **스타일**: Tailwind CSS v4를 `@tailwindcss/postcss` 플러그인으로 사용하며 `tailwind.config.*` 파일이 없습니다. 테마 확장은 `app/globals.css`의 `@theme inline` 블록에서 합니다(예: `--color-background: var(--background)` → `bg-background` 유틸리티). 다크 모드 색상은 `prefers-color-scheme` 미디어 쿼리로 `:root` CSS 변수를 바꾸는 방식이며, 템플릿 파일은 자동으로 감지되어 `content` 설정이 필요 없습니다.
 - **폰트/레이아웃**: `app/layout.tsx`에서 `next/font/google`의 Geist / Geist Mono를 CSS 변수(`--font-geist-sans`, `--font-geist-mono`)로 주입합니다.
