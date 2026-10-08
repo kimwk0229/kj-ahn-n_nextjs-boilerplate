@@ -26,7 +26,7 @@ npx tsc --noEmit   # 타입 체크 (별도 스크립트 없음)
 - **라우팅**: `app/` 디렉터리 기반 App Router입니다. 페이지는 `app/<경로>/page.tsx`, API는 `app/api/<경로>/route.ts`에서 HTTP 메서드 이름(`GET`, `POST` 등)으로 함수를 export합니다.
 - **API Route 패턴** (`app/api/scraping/route.ts`): 외부 API(`crawl-target-server.vercel.app/api/products`)를 대신 호출하는 프록시입니다. 새 API Route도 같은 응답 규칙을 따릅니다.
   - 응답은 항상 `{ success: true, data }` 또는 `{ success: false, error }`입니다. 상태 코드는 잘못된 쿼리 400, 외부 서버 오류·비JSON·형태 불일치 502, 시간 초과(`AbortSignal.timeout`) 504로 구분합니다. 자세한 오류는 `console.error`로 서버 로그에만 남기고 클라이언트에는 정해진 메시지만 보냅니다.
-  - 쿼리 `category`(소문자·하이픈), `page`(1 이상 정수), `pageSize`(1~50 정수)를 검증한 뒤 `BASE_URL` + `API_END` 템플릿 리터럴로 외부 URL(`apiUrl`)을 만듭니다(`category`는 `encodeURIComponent` 처리). 기본값은 `living`/1/3입니다.
+  - 쿼리 `category`(소문자·하이픈), `page`(1 이상 정수), `pageSize`(1~50 정수)를 검증한 뒤 `BASE_URL` + `API_END` 템플릿 리터럴로 외부 URL(`apiUrl`)을 만듭니다. `category`는 인코딩하지 않으므로 `CATEGORY_PATTERN` 검증이 파라미터 주입을 막는 유일한 장치입니다. 기본값은 `all`(전체 카테고리)/1/5입니다.
   - `data`는 `{ products, pagination }`이며 `pagination`은 외부 응답 값을 그대로 씁니다. 상품은 `toPublicProduct`의 허용 목록 필드만 반환하므로 외부 응답의 `sellerName`/`sellerEmail` 같은 개인정보는 노출되지 않습니다. 필드를 추가할 때는 `Product` 타입과 `toPublicProduct`를 함께 수정합니다.
 - **주석 기반 구현**: 파일에 한국어 단계별 주석만 먼저 작성해 두고, 그 주석 순서대로 코드를 채우는 방식으로 작업합니다. 구현 시 기존 주석은 유지합니다.
 - **스타일**: Tailwind CSS v4를 `@tailwindcss/postcss` 플러그인으로 사용하며 `tailwind.config.*` 파일이 없습니다. 테마 확장은 `app/globals.css`의 `@theme inline` 블록에서 합니다(예: `--color-background: var(--background)` → `bg-background` 유틸리티). 다크 모드 색상은 `prefers-color-scheme` 미디어 쿼리로 `:root` CSS 변수를 바꾸는 방식이며, 템플릿 파일은 자동으로 감지되어 `content` 설정이 필요 없습니다.

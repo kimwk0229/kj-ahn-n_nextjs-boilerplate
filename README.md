@@ -40,9 +40,9 @@ npm run dev
 
 | 쿼리 | 기본값 | 조건 |
 | --- | --- | --- |
-| `category` | `living` | 소문자와 하이픈, 30자 이하 |
+| `category` | `all` | 소문자와 하이픈, 30자 이하 (`all`은 전체, 그 외 `fashion`·`digital`·`food`·`living`·`books`·`sports`) |
 | `page` | `1` | 1 이상의 정수 |
-| `pageSize` | `3` | 1~50 사이의 정수 |
+| `pageSize` | `5` | 1~50 사이의 정수 |
 
 요청 예시: `/api/scraping?category=living&page=2&pageSize=3`
 

@@ -11,9 +11,9 @@ const API_END = "/api/products";
 const TIMEOUT_MS = 5000;
 
 // 쿼리 파라미터 기본값과 허용 범위입니다
-const DEFAULT_CATEGORY = "living";
+const DEFAULT_CATEGORY = "all";
 const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 3;
+const DEFAULT_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 50;
 const CATEGORY_PATTERN = /^[a-z-]{1,30}$/;
 
