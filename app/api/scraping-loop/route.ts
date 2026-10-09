@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     // 오류가 발생했을 때의 응답을 만듭니다
-    console.error("[api/scrapting-loop]", error);
+    console.error("[api/scraping-loop]", error);
 
     if (error instanceof DOMException && error.name === "TimeoutError") {
       return NextResponse.json({ success: false, error: "외부 서버 응답 시간이 초과되었습니다" }, { status: 504 });
