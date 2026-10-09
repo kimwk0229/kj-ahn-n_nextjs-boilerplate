@@ -35,6 +35,10 @@ npm run dev
 | `/` | `app/page.tsx` | 기본 시작 페이지 |
 | `/hello` | `app/hello/page.tsx` | 인사 페이지 |
 | `/api/scraping` | `app/api/scraping/route.ts` | 외부 상품 API에서 데이터를 가져와 반환 |
+| `/api/scraping-params` | `app/api/scraping-params/route.ts` | `/api/scraping`과 같은 구현 |
+| `/api/scraping-loop` | `app/api/scraping-loop/route.ts` | 카테고리의 모든 페이지를 반복해서 가져와 한 번에 반환 |
+| `/api/scraping-extract` | `app/api/scraping-extract/route.ts` | 전체 페이지를 가져와 필요한 필드만 추출하고 수집 시각을 함께 반환 |
+| `/api/scraping-functions` | `app/api/scraping-functions/route.ts` | `/api/scraping-extract`와 같은 결과, 단계별 함수로 나눠 구현 |
 
 ### `/api/scraping`
 
@@ -63,6 +67,37 @@ npm run dev
 | 400 | 쿼리 값이 조건에 맞지 않음 |
 | 502 | 외부 서버 오류, JSON이 아닌 응답, 예상과 다른 응답 형태 |
 | 504 | 외부 서버 응답 시간 초과 (5초) |
+
+### `/api/scraping-loop`, `/api/scraping-extract`, `/api/scraping-functions`
+
+한 카테고리의 상품을 페이지 나눔 없이 모두 가져옵니다. 1페이지부터 외부 서버의 `hasNextPage`가 `false`가 될 때까지 50개씩 차례로 요청합니다.
+
+| 쿼리 | 기본값 | 조건 |
+| --- | --- | --- |
+| `category` | `all` | `/api/scraping`과 같음 |
+
+요청 예시: `/api/scraping-extract?category=books`
+
+| API | 상품 필드 | 응답의 추가 필드 |
+| --- | --- | --- |
+| `/api/scraping-loop` | 판매자 정보를 뺀 모든 필드 | 없음 |
+| `/api/scraping-extract` | `id`, `name`, `price`, `rating`, `reviewCount` | `scrapedAt` |
+| `/api/scraping-functions` | `id`, `name`, `price`, `rating`, `reviewCount` | `scrapedAt` |
+
+```json
+{
+  "success": true,
+  "data": {
+    "category": "books",
+    "totalProducts": 42,
+    "fetchedPages": 1,
+    "scrapedAt": "2026-10-09T07:30:00.000Z",
+    "products": [{ "id": "7", "name": "...", "price": 1000, "rating": 4.5, "reviewCount": 12 }]
+  }
+}
+```
+
+`scrapedAt`은 모든 페이지를 가져온 시각(ISO 8601, UTC)입니다. 오류 응답 형태와 상태 코드는 `/api/scraping`과 같습니다. 5초 타임아웃은 페이지 요청마다 적용되며, 페이지가 20개를 넘으면 가져오기를 멈추고 502를 반환합니다.
 
 ## 스타일
 
